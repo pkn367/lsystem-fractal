@@ -1,22 +1,9 @@
-def draw_lsystem(t, instructions, angle):
-    screen = t.getscreen()
+import turtle
 
-    t.clear()
-    t.hideturtle()
-    t.speed(0)
-
-    # Bigger line size
-    step = 10
-
-    # Better starting position
-    t.penup()
-    t.goto(-350, 0)
-    t.setheading(0)
-    t.pendown()
-
-    screen.tracer(0)
-
+def draw_lsystem(t, instructions, angle, step):
     stack = []
+
+    turtle.tracer(0, 0)
 
     for cmd in instructions:
         if cmd == "F":
@@ -34,6 +21,6 @@ def draw_lsystem(t, instructions, angle):
             t.setheading(heading)
             t.pendown()
 
-    screen.update()
+    turtle.update()
 
 

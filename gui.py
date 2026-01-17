@@ -1,56 +1,94 @@
 import tkinter as tk
+from tkinter import ttk
 from lsystem_engine import generate_lsystem
 from turtle_renderer import draw_lsystem
+import threading
 
+class LSystemGUI:
+    def __init__(self, root):
+        self.root = root
+        root.title("L-System Fractal Architect")
+        root.geometry("350x500")
 
-def run():
-    root = tk.Tk()
-    root.title("L-System Fractal Architect")
+        self.create_widgets()
 
-    canvas = tk.Canvas(root, width=900, height=600)
-    canvas.pack(side=tk.LEFT)
+    def create_widgets(self):
+        ttk.Label(self.root, text="Axiom").pack()
+        self.axiom = ttk.Entry(self.root)
+        self.axiom.pack()
 
-    panel = tk.Frame(root)
-    panel.pack(side=tk.RIGHT, padx=10)
+        ttk.Label(self.root, text="Rule (comma separated)").pack()
+        self.rules = ttk.Entry(self.root)
+        self.rules.pack()
 
-    tk.Label(panel, text="Axiom").pack()
-    axiom_entry = tk.Entry(panel)
-    axiom_entry.insert(0, "F")
-    axiom_entry.pack()
+        ttk.Label(self.root, text="Angle").pack()
+        self.angle = ttk.Entry(self.root)
+        self.angle.pack()
 
-    tk.Label(panel, text="Rules (F=...)").pack()
-    rules_entry = tk.Entry(panel)
-    rules_entry.insert(0, "F=F[+F]F[-F]F")
-    rules_entry.pack()
+        ttk.Label(self.root, text="Iterations").pack()
+        self.iterations = ttk.Entry(self.root)
+        self.iterations.pack()
 
-    tk.Label(panel, text="Angle").pack()
-    angle_entry = tk.Entry(panel)
-    angle_entry.insert(0, "25")
-    angle_entry.pack()
+        ttk.Button(self.root, text="Generate", command=self.generate).pack(pady=10)
 
-    tk.Label(panel, text="Iterations").pack()
-    iter_entry = tk.Entry(panel)
-    iter_entry.insert(0, "4")
-    iter_entry.pack()
+        ttk.Label(self.root, text="Drawing Speed").pack()
+        self.speed = ttk.Scale(self.root, from_=1, to=10, orient="horizontal")
+        self.speed.set(5)
+        self.speed.pack()
 
-    def on_generate():
-        canvas.delete("all")  # 🚨 CLEAR CANVAS
+        ttk.Label(self.root, text="Presets").pack(pady=10)
+        ttk.Button(self.root, text="🌿 Tree", command=self.tree).pack()
+        ttk.Button(self.root, text="❄ Koch Snowflake", command=self.koch).pack()
+        ttk.Button(self.root, text="🐉 Dragon Curve", command=self.dragon).pack()
 
-        axiom = axiom_entry.get()
-        angle = float(angle_entry.get())
-        iterations = int(iter_entry.get())
+    def generate(self):
+        axiom = self.axiom.get()
+        angle = float(self.angle.get())
+        iterations = int(self.iterations.get())
+        speed = float(self.speed.get())
 
-        # Parse rules
         rules = {}
-        rule_text = rules_entry.get()
-        left, right = rule_text.split("=")
-        rules[left.strip()] = right.strip()
+        for rule in self.rules.get().split(","):
+            key, value = rule.split("=")
+            rules[key.strip()] = value.strip()
 
-        result = generate_lsystem(axiom, rules, iterations)
+        instructions = generate_lsystem(axiom, rules, iterations)
 
-        draw_lsystem(canvas, result, angle)
+        threading.Thread(
+            target=draw_lsystem,
+            args=(instructions, angle, 5, speed),
+            daemon=True
+        ).start()
 
-    tk.Button(panel, text="Generate", command=on_generate).pack(pady=10)
+    def tree(self):
+        self.axiom.delete(0, tk.END)
+        self.rules.delete(0, tk.END)
+        self.angle.delete(0, tk.END)
+        self.iterations.delete(0, tk.END)
 
-    root.mainloop()
+        self.axiom.insert(0, "F")
+        self.rules.insert(0, "F=F[+F]F[-F]F")
+        self.angle.insert(0, "25")
+        self.iterations.insert(0, "5")
 
+    def koch(self):
+        self.axiom.delete(0, tk.END)
+        self.rules.delete(0, tk.END)
+        self.angle.delete(0, tk.END)
+        self.iterations.delete(0, tk.END)
+
+        self.axiom.insert(0, "F--F--F")
+        self.rules.insert(0, "F=F+F--F+F")
+        self.angle.insert(0, "60")
+        self.iterations.insert(0, "4")
+
+    def dragon(self):
+        self.axiom.delete(0, tk.END)
+        self.rules.delete(0, tk.END)
+        self.angle.delete(0, tk.END)
+        self.iterations.delete(0, tk.END)
+
+        self.axiom.insert(0, "FX")
+        self.rules.insert(0, "X=X+YF+,Y=-FX-Y")
+        self.angle.insert(0, "90")
+        self.iterations.insert(0, "10")

@@ -1,10 +1,9 @@
 def generate_lsystem(axiom, rules, iterations):
-    current = axiom
-
+    result = axiom
     for _ in range(iterations):
-        next_string = ""
-        for ch in current:
-            next_string += rules.get(ch, ch)
-        current = next_string
+        next_string = []
+        for ch in result:
+            next_string.append(rules.get(ch, ch))
+        result = "".join(next_string)
+    return result
 
-    return current
